@@ -1,0 +1,27 @@
+html {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  width: 100%;
+  height: 100%;
+}
+
+canvas {
+  position: absolute;
+}
+
+#viewport.default {
+  width: 285px;
+  height: 565px;
+
+  background: #eeff66;
+}
+
+#grid {
+  z-index: 10;
+}
+
+#scene {
+  z-index: 20;
+}
