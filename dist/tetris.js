@@ -60,6 +60,11 @@ class Scene {
 		this.ppr = this._cvs.getContext("2d");
 
 		this.tetris = new Tetris(this.ppr);
+		this.tetromino = new Tetromino(this.tetris);
+	}
+
+	draw() {
+		//
 	}
 
 	clear() {
@@ -87,16 +92,16 @@ class Tetris {
 	async drawWell(fill) {
 		// let tm;
 		// console.log(tm = performance.now());
-		// this._well.forEach( (row, x) => {
-			// row.forEach( (el, y) => {
-		await delay(500);
+		// await delay(1000);
 		for (let x = 0; x < 20; x++) {
 			for (let y = 0; y < 10; y++) {
 				if (!this._well[x][y]) {
-					this._drawBlock(x, y, fill);
+					// y = row, x = col
+					this._drawBlock(y, x, fill);
 				}
+				// await delay(25);
 			}
-			await delay(200);
+			// await delay(125);
 		}
 		// console.log(performance.now() - tm);
 		// drawing a full well take ~3 in avg
@@ -110,8 +115,8 @@ class Tetris {
 
 		this._ppr.beginPath();
 		this._ppr.rect(
-			this._calcBlockPos(y),
 			this._calcBlockPos(x),
+			this._calcBlockPos(y),
 			BLOCK_SIZE - 4, BLOCK_SIZE - 4);
 		this._ppr.closePath();
 		this._ppr.fill();
@@ -120,8 +125,8 @@ class Tetris {
 
 	_clearBlock(x, y) {
 		this._ppr.clearRect(
-			this._calcBlockPos(y),
 			this._calcBlockPos(x),
+			this._calcBlockPos(y),
 			BLOCK_SIZE - 4, BLOCK_SIZE - 4);
 		// console.log("clearBlock...", posX, posY);
 	}
@@ -129,6 +134,96 @@ class Tetris {
 	_calcBlockPos(coord) {
 		return (BLOCK_SIZE + 1) * coord + WELL_PAD + BLOCK_PAD;
 	}
+}
+
+class Tetromino {
+	constructor(tetris) {
+		this._tetris = tetris;
+
+		// max, min - inclusive
+		// js random -> Math.floor(Math.random() * (max - min + 1) + min)
+		this.type = Math.floor(Math.random() * 7);
+		console.log("type:", this.type);
+		this.state = Math.floor(Math.random() * 2) ? 0 : 2;
+		console.log("state:", this.state);
+
+		this.blocks = [
+			{x: 0, y: 0},
+			{x: 0, y: 0},
+			{x: 0, y: 0},
+			{x: 0, y: 0}
+		];
+
+		switch (this.type) {
+			// case 0: this._spawnI(); break;
+			// case 1: this._spawnS(); break;
+			default: this._spawnS();
+			// case 2: this._spawnJ(); break;
+			// case 3: this._spawnT(); break;
+			// case 4: this._spawnL(); break;
+			// case 5: this._spawnZ(); break;
+			// case 6: this._spawnO(); break;
+		}
+
+		this._test();
+	}
+
+	fall() {
+		//
+	}
+
+	drop() {
+		//
+	}
+
+	// ==============================
+	// PRIVATE
+	// ==============================
+	async _spawnI() {
+		this.blocks[0].x = -1;
+		this.blocks[0].y = 3;
+		this.blocks[1].x = -1;
+		this.blocks[1].y = 4;
+		this.blocks[2].x = -1;
+		this.blocks[2].y = 5;
+		this.blocks[3].x = -1;
+		this.blocks[3].y = 6;
+	}
+
+	_spawnS() {
+		this.blocks[0].x = -2;
+		this.blocks[0].y = 4;
+		this.blocks[1].x = -2;
+		this.blocks[1].y = 5;
+		this.blocks[2].x = -1;
+		this.blocks[2].y = 5;
+		this.blocks[3].x = -1;
+		this.blocks[3].y = 6;
+	}
+
+	async _test() {
+		console.log(this.blocks);
+		for (let f = 0; f < 20; f++) {
+			console.log("clear...");
+			for (let b = 0; b < 4; b++) {
+				this._tetris._clearBlock(this.blocks[b].y, this.blocks[b].x);
+				// console.log(this.blocks[b].x, this.blocks[b].y);
+			}
+			// await delay(200);
+			console.log("draw...");
+			for (let b = 0; b < 4; b++) {
+				this.blocks[b].x++;
+				this._tetris._drawBlock(this.blocks[b].y, this.blocks[b].x);
+				// console.log(this.blocks[b].x, this.blocks[b].y);
+			}
+			await delay(100);
+		}
+	}
+	// _spawnI
+	// _spawnI
+	// _spawnI
+	// _spawnI
+	// _spawnI
 }
 
 // ==================================================
@@ -173,7 +268,7 @@ const grid = new Grid("grid", viewport);
 const scene = new Scene("scene", viewport);
 
 grid.draw();
-scene.tetris.drawWell();
+// scene.tetris.drawWell();
 
 const init = () => {
 	gameloop();
