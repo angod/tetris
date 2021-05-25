@@ -61,6 +61,8 @@ class Scene {
 
 		this.tetris = new Tetris(this.ppr);
 		this.tetromino = new Tetromino(this.tetris);
+
+		this._bindEvents();
 	}
 
 	draw() {
@@ -69,6 +71,19 @@ class Scene {
 
 	clear() {
 		this.ppr.clearRect(0, 0, this._cvs.width, this._cvs.height);
+	}
+
+	// ==============================
+	// PRIVATE
+	// ==============================
+	_bindEvents() {
+		window.addEventListener("keydown", (e) => {
+			switch (e.code) {
+				case "Space":
+					this.tetromino._testRotate();
+					break;
+			}
+		});
 	}
 }
 
@@ -148,24 +163,61 @@ class Tetromino {
 		console.log("state:", this.state);
 
 		this.blocks = [
-			{x: 0, y: 0},
-			{x: 0, y: 0},
-			{x: 0, y: 0},
-			{x: 0, y: 0}
+			{ x: 0, y: 0 },
+			{ x: 0, y: 0 },
+			{ x: 0, y: 0 },
+			{ x: 0, y: 0 },
 		];
 
+		this.offsets = [
+			// 0deg => 90deg CW
+			[
+				{ x: 0, y: 0 },
+				{ x: 0, y: 0 },
+				{ x: 0, y: 0 },
+				{ x: 0, y: 0 },
+			],
+			// 90deg => 180deg CW
+			[
+				{ x: 0, y: 0 },
+				{ x: 0, y: 0 },
+				{ x: 0, y: 0 },
+				{ x: 0, y: 0 },
+			],
+			// 180deg => 270deg CW
+			[
+				{ x: 0, y: 0 },
+				{ x: 0, y: 0 },
+				{ x: 0, y: 0 },
+				{ x: 0, y: 0 },
+			],
+			// 270deg => 0deg CW
+			[
+				{ x: 0, y: 0 },
+				{ x: 0, y: 0 },
+				{ x: 0, y: 0 },
+				{ x: 0, y: 0 },
+			],
+		];
+
+		// spawn tetromino
 		switch (this.type) {
 			// case 0: this._spawnI(); break;
 			// case 1: this._spawnS(); break;
-			default: this._spawnS();
 			// case 2: this._spawnJ(); break;
 			// case 3: this._spawnT(); break;
 			// case 4: this._spawnL(); break;
 			// case 5: this._spawnZ(); break;
 			// case 6: this._spawnO(); break;
+			default: this._spawnI();
 		}
 
-		this._test();
+		this._testFall();
+		// this._testRotation();
+	}
+
+	rotate() {
+		//
 	}
 
 	fall() {
@@ -179,38 +231,100 @@ class Tetromino {
 	// ==============================
 	// PRIVATE
 	// ==============================
-	async _spawnI() {
+	_spawnI() {
 		this.blocks[0].x = -1;
-		this.blocks[0].y = 3;
+		this.blocks[0].y =  3;
 		this.blocks[1].x = -1;
-		this.blocks[1].y = 4;
+		this.blocks[1].y =  4;
 		this.blocks[2].x = -1;
-		this.blocks[2].y = 5;
+		this.blocks[2].y =  5;
 		this.blocks[3].x = -1;
-		this.blocks[3].y = 6;
+		this.blocks[3].y =  6;
+
+		this.offsets = [
+			[{x:  2, y: -1}, {x:  1, y:  0}, {x:  0, y:  1}, {x: -1, y:  2},],
+			[{x: -2, y:  2}, {x: -1, y:  1}, {x:  0, y:  0}, {x:  1, y: -1},],
+			[{x:  1, y: -2}, {x:  0, y: -1}, {x: -1, y:  0}, {x: -2, y:  1},],
+			[{x: -1, y:  1}, {x:  0, y:  0}, {x:  1, y: -1}, {x:  2, y: -2},],
+		];
 	}
 
 	_spawnS() {
 		this.blocks[0].x = -2;
-		this.blocks[0].y = 4;
+		this.blocks[0].y =  5;
 		this.blocks[1].x = -2;
-		this.blocks[1].y = 5;
+		this.blocks[1].y =  4;
 		this.blocks[2].x = -1;
-		this.blocks[2].y = 5;
+		this.blocks[2].y =  4;
 		this.blocks[3].x = -1;
-		this.blocks[3].y = 6;
+		this.blocks[3].y =  3;
 	}
 
-	async _test() {
+	_spawnJ() {
+		this.blocks[0].x = this.state ? -2 : -1;
+		this.blocks[0].y = this.state ?  4 :  6;
+		this.blocks[1].x = this.state ? -2 : -1;
+		this.blocks[1].y = this.state ?  5 :  5;
+		this.blocks[2].x = this.state ? -2 : -1;
+		this.blocks[2].y = this.state ?  6 :  4;
+		this.blocks[3].x = this.state ? -1 : -2;
+		this.blocks[3].y = this.state ?  6 :  4;
+	}
+
+	_spawnT() {
+		this.blocks[0].x = this.state ? -1 : -2;
+		this.blocks[0].y = this.state ?  4 :  5;
+		this.blocks[1].x = this.state ? -1 : -2;
+		this.blocks[1].y = this.state ?  5 :  4;
+		this.blocks[2].x = this.state ? -1 : -2;
+		this.blocks[2].y = this.state ?  6 :  3;
+		this.blocks[3].x = this.state ? -2 : -1;
+		this.blocks[3].y = this.state ?  5 :  4;
+	}
+
+	_spawnL() {
+		this.blocks[0].x = this.state ? -2 : -1;
+		this.blocks[0].y = this.state ?  5 :  3;
+		this.blocks[1].x = this.state ? -2 : -1;
+		this.blocks[1].y = this.state ?  4 :  4;
+		this.blocks[2].x = this.state ? -2 : -1;
+		this.blocks[2].y = this.state ?  3 :  5;
+		this.blocks[3].x = this.state ? -1 : -2;
+		this.blocks[3].y = this.state ?  3 :  5;
+	}
+
+	_spawnZ() {
+		this.blocks[0].x = -2;
+		this.blocks[0].y =  4;
+		this.blocks[1].x = -2;
+		this.blocks[1].y =  5;
+		this.blocks[2].x = -1;
+		this.blocks[2].y =  5;
+		this.blocks[3].x = -1;
+		this.blocks[3].y =  6;
+	}
+
+	_spawnO() {
+		this.blocks[0].x = -1;
+		this.blocks[0].y =  4;
+		this.blocks[1].x = -2;
+		this.blocks[1].y =  4;
+		this.blocks[2].x = -2;
+		this.blocks[2].y =  5;
+		this.blocks[3].x = -1;
+		this.blocks[3].y =  5;
+	}
+
+	async _testFall() {
 		console.log(this.blocks);
-		for (let f = 0; f < 20; f++) {
-			console.log("clear...");
+		for (let f = 0; f < 10; f++) {
+			// console.log("clear...");
 			for (let b = 0; b < 4; b++) {
 				this._tetris._clearBlock(this.blocks[b].y, this.blocks[b].x);
 				// console.log(this.blocks[b].x, this.blocks[b].y);
 			}
 			// await delay(200);
-			console.log("draw...");
+			// console.log("draw...");
 			for (let b = 0; b < 4; b++) {
 				this.blocks[b].x++;
 				this._tetris._drawBlock(this.blocks[b].y, this.blocks[b].x);
@@ -219,11 +333,47 @@ class Tetromino {
 			await delay(100);
 		}
 	}
-	// _spawnI
-	// _spawnI
-	// _spawnI
-	// _spawnI
-	// _spawnI
+
+	async _testRotate() {
+		let clr = "";
+		switch (this.state) {
+			case 0: clr = "red"; break;
+			case 1: clr = "black"; break;
+			case 2: clr = "blue"; break;
+			case 3: clr = "magenta"; break;
+		}
+		console.log("state:", this.state);
+		for (let b = 0; b < 4; b++) {
+			// this._tetris._clearBlock(this.blocks[b].y, this.blocks[b].x);
+			console.log("x:", this.blocks[b].x, "y:", this.blocks[b].y);
+			console.log("offsetX:", this.offsets[this.state][b].x,
+				"offsetY:", this.offsets[this.state][b].y);
+			this.blocks[b].x += this.offsets[this.state][b].y;
+			this.blocks[b].y += this.offsets[this.state][b].x;
+			this._tetris._drawBlock(this.blocks[b].y, this.blocks[b].x, clr);
+			console.log("x:", this.blocks[b].x, "y:", this.blocks[b].y);
+		}
+		// this._printOffsets();
+		// this._printBlocks();
+		if (this.state < 3) {
+			this.state++;
+		} else {
+			this.state = 0;
+		}
+	}
+
+	_printBlocks() {
+		for (let b = 0; b < 4; b++) {
+			console.log("x:", this.blocks[b].x, "y:", this.blocks[b].y);
+		}
+	}
+
+	_printOffsets() {
+		for (let b = 0; b < 4; b++) {
+			console.log("offsetX:", this.offsets[this.state][b].x,
+				"offsetY:", this.offsets[this.state][b].y);
+		}
+	}
 }
 
 // ==================================================
