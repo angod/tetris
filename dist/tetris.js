@@ -1,10 +1,15 @@
 // jshint esversion: 8
 
+import Tetromino from "./tetromino.js";
+
 const
 	WELL_PAD = 2,
 	BLOCK_PAD = 3,
 	BLOCK_SIZE = 27,
 	LINE_WIDTH_FIX = 0.5;
+
+let
+	PAUSE = false;
 
 // ==================================================
 // TETRIS
@@ -78,9 +83,29 @@ class Scene {
 	// ==============================
 	_bindEvents() {
 		window.addEventListener("keydown", (e) => {
-			switch (e.code) {
-				case "Space":
-					this.tetromino._testRotate();
+			switch (e.key) {
+				case " ":
+					console.log("pause: ", !PAUSE ? "on" : "off");
+					PAUSE = !PAUSE;
+					break;
+
+				case "ArrowUp":
+					this.tetromino.rotate();
+					break;
+
+				case "ArrowDown":
+					this.tetromino.drop();
+					console.log("arrow down was pressed.");
+					break;
+
+				case "ArrowLeft":
+					console.log("arrow left was pressed.");
+					this.tetromino.left();
+					break;
+
+				case "ArrowRight":
+					console.log("arrow right was pressed.");
+					this.tetromino.right();
 					break;
 			}
 		});
@@ -104,28 +129,34 @@ class Tetris {
 		})();
 	}
 
-	async drawWell(fill) {
+	drawWell(fill) {
 		// let tm;
 		// console.log(tm = performance.now());
-		// await delay(1000);
 		for (let x = 0; x < 20; x++) {
 			for (let y = 0; y < 10; y++) {
-				if (!this._well[x][y]) {
+				if (this._well[x][y]) {
 					// y = row, x = col
-					this._drawBlock(y, x, fill);
+					this.drawBlock(y, x, fill);
 				}
-				// await delay(25);
 			}
-			// await delay(125);
 		}
 		// console.log(performance.now() - tm);
 		// drawing a full well take ~3 in avg
 	}
 
-	// ==============================
-	// PRIVATE
-	// ==============================
-	_drawBlock(x, y, fill) {
+	setBlock(x, y, state) {
+		this._well[x][y] = state;
+	}
+
+	getBlock(x, y) {
+		return this._well[x][y] ? true : false;
+	}
+
+	toggleBlock(x, y) {
+		this._well[x][y] = !this._well[x][y];
+	}
+
+	drawBlock(x, y, fill) {
 		this._ppr.fillStyle = fill || "#226633";
 
 		this._ppr.beginPath();
@@ -135,246 +166,23 @@ class Tetris {
 			BLOCK_SIZE - 4, BLOCK_SIZE - 4);
 		this._ppr.closePath();
 		this._ppr.fill();
-		// console.log("drawBlock...", posX, posY);
 	}
 
-	_clearBlock(x, y) {
+	clearBlock(x, y) {
 		this._ppr.clearRect(
 			this._calcBlockPos(x),
 			this._calcBlockPos(y),
 			BLOCK_SIZE - 4, BLOCK_SIZE - 4);
-		// console.log("clearBlock...", posX, posY);
-	}
-
-	_calcBlockPos(coord) {
-		return (BLOCK_SIZE + 1) * coord + WELL_PAD + BLOCK_PAD;
-	}
-}
-
-class Tetromino {
-	constructor(tetris) {
-		this._tetris = tetris;
-
-		// max, min - inclusive
-		// js random -> Math.floor(Math.random() * (max - min + 1) + min)
-		this.type = Math.floor(Math.random() * 7);
-		console.log("type:", this.type);
-		this.state = Math.floor(Math.random() * 2) ? 0 : 2;
-		console.log("state:", this.state);
-
-		this.blocks = [
-			{ x: 0, y: 0 },
-			{ x: 0, y: 0 },
-			{ x: 0, y: 0 },
-			{ x: 0, y: 0 },
-		];
-
-		this.offsets = [
-			// 0deg => 90deg CW
-			[
-				{ x: 0, y: 0 },
-				{ x: 0, y: 0 },
-				{ x: 0, y: 0 },
-				{ x: 0, y: 0 },
-			],
-			// 90deg => 180deg CW
-			[
-				{ x: 0, y: 0 },
-				{ x: 0, y: 0 },
-				{ x: 0, y: 0 },
-				{ x: 0, y: 0 },
-			],
-			// 180deg => 270deg CW
-			[
-				{ x: 0, y: 0 },
-				{ x: 0, y: 0 },
-				{ x: 0, y: 0 },
-				{ x: 0, y: 0 },
-			],
-			// 270deg => 0deg CW
-			[
-				{ x: 0, y: 0 },
-				{ x: 0, y: 0 },
-				{ x: 0, y: 0 },
-				{ x: 0, y: 0 },
-			],
-		];
-
-		// spawn tetromino
-		switch (this.type) {
-			// case 0: this._spawnI(); break;
-			// case 1: this._spawnS(); break;
-			// case 2: this._spawnJ(); break;
-			// case 3: this._spawnT(); break;
-			// case 4: this._spawnL(); break;
-			// case 5: this._spawnZ(); break;
-			// case 6: this._spawnO(); break;
-			default: this._spawnI();
-		}
-
-		this._testFall();
-		// this._testRotation();
-	}
-
-	rotate() {
-		//
-	}
-
-	fall() {
-		//
-	}
-
-	drop() {
-		//
 	}
 
 	// ==============================
 	// PRIVATE
 	// ==============================
-	_spawnI() {
-		this.blocks[0].x = -1;
-		this.blocks[0].y =  3;
-		this.blocks[1].x = -1;
-		this.blocks[1].y =  4;
-		this.blocks[2].x = -1;
-		this.blocks[2].y =  5;
-		this.blocks[3].x = -1;
-		this.blocks[3].y =  6;
-
-		this.offsets = [
-			[{x:  2, y: -1}, {x:  1, y:  0}, {x:  0, y:  1}, {x: -1, y:  2},],
-			[{x: -2, y:  2}, {x: -1, y:  1}, {x:  0, y:  0}, {x:  1, y: -1},],
-			[{x:  1, y: -2}, {x:  0, y: -1}, {x: -1, y:  0}, {x: -2, y:  1},],
-			[{x: -1, y:  1}, {x:  0, y:  0}, {x:  1, y: -1}, {x:  2, y: -2},],
-		];
-	}
-
-	_spawnS() {
-		this.blocks[0].x = -2;
-		this.blocks[0].y =  5;
-		this.blocks[1].x = -2;
-		this.blocks[1].y =  4;
-		this.blocks[2].x = -1;
-		this.blocks[2].y =  4;
-		this.blocks[3].x = -1;
-		this.blocks[3].y =  3;
-	}
-
-	_spawnJ() {
-		this.blocks[0].x = this.state ? -2 : -1;
-		this.blocks[0].y = this.state ?  4 :  6;
-		this.blocks[1].x = this.state ? -2 : -1;
-		this.blocks[1].y = this.state ?  5 :  5;
-		this.blocks[2].x = this.state ? -2 : -1;
-		this.blocks[2].y = this.state ?  6 :  4;
-		this.blocks[3].x = this.state ? -1 : -2;
-		this.blocks[3].y = this.state ?  6 :  4;
-	}
-
-	_spawnT() {
-		this.blocks[0].x = this.state ? -1 : -2;
-		this.blocks[0].y = this.state ?  4 :  5;
-		this.blocks[1].x = this.state ? -1 : -2;
-		this.blocks[1].y = this.state ?  5 :  4;
-		this.blocks[2].x = this.state ? -1 : -2;
-		this.blocks[2].y = this.state ?  6 :  3;
-		this.blocks[3].x = this.state ? -2 : -1;
-		this.blocks[3].y = this.state ?  5 :  4;
-	}
-
-	_spawnL() {
-		this.blocks[0].x = this.state ? -2 : -1;
-		this.blocks[0].y = this.state ?  5 :  3;
-		this.blocks[1].x = this.state ? -2 : -1;
-		this.blocks[1].y = this.state ?  4 :  4;
-		this.blocks[2].x = this.state ? -2 : -1;
-		this.blocks[2].y = this.state ?  3 :  5;
-		this.blocks[3].x = this.state ? -1 : -2;
-		this.blocks[3].y = this.state ?  3 :  5;
-	}
-
-	_spawnZ() {
-		this.blocks[0].x = -2;
-		this.blocks[0].y =  4;
-		this.blocks[1].x = -2;
-		this.blocks[1].y =  5;
-		this.blocks[2].x = -1;
-		this.blocks[2].y =  5;
-		this.blocks[3].x = -1;
-		this.blocks[3].y =  6;
-	}
-
-	_spawnO() {
-		this.blocks[0].x = -1;
-		this.blocks[0].y =  4;
-		this.blocks[1].x = -2;
-		this.blocks[1].y =  4;
-		this.blocks[2].x = -2;
-		this.blocks[2].y =  5;
-		this.blocks[3].x = -1;
-		this.blocks[3].y =  5;
-	}
-
-	async _testFall() {
-		console.log(this.blocks);
-		for (let f = 0; f < 10; f++) {
-			// console.log("clear...");
-			for (let b = 0; b < 4; b++) {
-				this._tetris._clearBlock(this.blocks[b].y, this.blocks[b].x);
-				// console.log(this.blocks[b].x, this.blocks[b].y);
-			}
-			// await delay(200);
-			// console.log("draw...");
-			for (let b = 0; b < 4; b++) {
-				this.blocks[b].x++;
-				this._tetris._drawBlock(this.blocks[b].y, this.blocks[b].x);
-				// console.log(this.blocks[b].x, this.blocks[b].y);
-			}
-			await delay(100);
-		}
-	}
-
-	async _testRotate() {
-		let clr = "";
-		switch (this.state) {
-			case 0: clr = "red"; break;
-			case 1: clr = "black"; break;
-			case 2: clr = "blue"; break;
-			case 3: clr = "magenta"; break;
-		}
-		console.log("state:", this.state);
-		for (let b = 0; b < 4; b++) {
-			// this._tetris._clearBlock(this.blocks[b].y, this.blocks[b].x);
-			console.log("x:", this.blocks[b].x, "y:", this.blocks[b].y);
-			console.log("offsetX:", this.offsets[this.state][b].x,
-				"offsetY:", this.offsets[this.state][b].y);
-			this.blocks[b].x += this.offsets[this.state][b].y;
-			this.blocks[b].y += this.offsets[this.state][b].x;
-			this._tetris._drawBlock(this.blocks[b].y, this.blocks[b].x, clr);
-			console.log("x:", this.blocks[b].x, "y:", this.blocks[b].y);
-		}
-		// this._printOffsets();
-		// this._printBlocks();
-		if (this.state < 3) {
-			this.state++;
-		} else {
-			this.state = 0;
-		}
-	}
-
-	_printBlocks() {
-		for (let b = 0; b < 4; b++) {
-			console.log("x:", this.blocks[b].x, "y:", this.blocks[b].y);
-		}
-	}
-
-	_printOffsets() {
-		for (let b = 0; b < 4; b++) {
-			console.log("offsetX:", this.offsets[this.state][b].x,
-				"offsetY:", this.offsets[this.state][b].y);
-		}
+	_calcBlockPos(coord) {
+		return (BLOCK_SIZE + 1) * coord + WELL_PAD + BLOCK_PAD;
 	}
 }
+
 
 // ==================================================
 // GAME
@@ -390,6 +198,12 @@ const delay = (n) => {
 	});
 };
 
+// ==================================================
+// TEST
+// ==================================================
+
+let viewport, grid, scene;
+
 let tick = -1;
 const gameloop = async () => {
 	// await delay(100);
@@ -401,31 +215,31 @@ const gameloop = async () => {
 	// await delay(250);
 	// await delay(500);
 	// await delay(750);
-	// await delay(1000);
+	await delay(1000);
 	// console.log(performance.now());
 
-	if (++tick === 0) return;
+	if (!PAUSE) {
+		if (!scene.tetromino.down()) {
+			console.log("END???!!!", scene.tetromino);
+		}
+	}
+
+	if (++tick === 500) return;
+	console.log("tick:", tick);
 
 	requestAnimationFrame(gameloop);
 };
 
-// ==================================================
-// TEST
-// ==================================================
-
-const viewport = new Viewport("viewport");
-const grid = new Grid("grid", viewport);
-const scene = new Scene("scene", viewport);
-
-grid.draw();
-// scene.tetris.drawWell();
-
 const init = () => {
+	viewport = new Viewport("viewport");
+	grid = new Grid("grid", viewport);
+	scene = new Scene("scene", viewport);
+
+	grid.draw();
+
 	gameloop();
 };
 
 // everthing start here
 init();
-
-// 	fill: this._state ? "#226633" : "#aacc55",
 

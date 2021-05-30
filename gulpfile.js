@@ -22,6 +22,7 @@ const watch = function(done) {
 	gulp.watch([
 		"./dist/index.html",
 		"./dist/tetris.css",
+		"./dist/tetromino.js",
 		"./dist/tetris.js"
 		], gulp.series(livereload));
 
